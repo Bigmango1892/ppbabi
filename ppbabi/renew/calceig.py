@@ -26,7 +26,7 @@ def _calc_weight(word_list: list):
 
 
 def _activation_func(n: int):
-    alpha = 0.8
+    alpha = 1
     result = []
     tmp = 1
     for i in range(n):
@@ -43,5 +43,5 @@ def jdeig(word_list: list):
     return idf
 
 
-with open('./idf.txt', 'r', encoding='utf8') as f:
+with open('./ppbabi/renew/idf.txt', 'r', encoding='utf8') as f:
     IDF = {x.split(sep=' ')[0]: float(x.split(sep=' ')[1].strip('\n')) for x in f.readlines()}
