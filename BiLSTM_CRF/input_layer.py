@@ -12,7 +12,7 @@ with open('./posseg.txt', 'r', encoding='utf8') as f:
 
 # 读取词性与词性标注对应表
 with open('./conpos.txt', 'r', encoding='utf8') as f:
-    CONPOS = f.read()
+    CONPOS = {POS.split(sep=' ')[0]: POS.split(sep=' ')[1:] for POS in f.readlines()}
 
 
 def one_hot(describe_text: str, vectorize: bool = False):
@@ -65,10 +65,27 @@ def calc_con(text_words: list, text_length: int):
                     con_eig[i_words: i_words + word_len] = [4 for _ in range(word_len)]
                     i_words = i_words + word_len
                     i_pos = i_pos + 1
+                continue
             else:
                 i_words = i_words + len(text_words[i_pos].word)
                 i_pos = i_pos + 1
-
+                continue
+        if text_words[i_pos].flag in CONPOS['a']:
+            if i_pos + 1 < len(text_words) and text_words[i_pos + 1].flag in CONPOS['n']:
+                word_len = len(text_words[i_pos].word)
+                con_eig[i_words: i_words + word_len] = [2 for _ in range(word_len)]
+                i_words = i_words + word_len + len(text_words[i_pos + 1].word)
+                i_pos = i_pos + 2
+                continue
+            else:
+                i_words = i_words + len(text_words[i_pos].word)
+                i_pos = i_pos + 1
+                continue
+        if text_words[i_pos].flag in CONPOS['c']:
+            word_len = len(text_words[i_pos].word)
+            con_eig[i_words: i_words + word_len] = [3 for _ in range(word_len)]
+            i_words = i_words + word_len
+            i_pos = i_pos + 1
 
 
 # 若直接运行该程序，则为使用jd_sample.csv更新字符表character.txt
