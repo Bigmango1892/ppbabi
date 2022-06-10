@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import jieba.posseg
+import torch
 
 # 读取所有的字符
 with open('./characters.txt', 'r', encoding='utf8') as f:
@@ -22,10 +23,10 @@ class TextFeature:
             self.words = words
         else:
             self.words = jieba.posseg.lcut(text)
-        self.onehot = self.calc_onehot(vectorize=False)
-        self.seg = self.calc_seg()
-        self.con = self.calc_con()
-        self.pos = self.calc_pos()
+        self.onehot = torch.tensor(self.calc_onehot(vectorize=False), dtype=torch.long)
+        self.seg = torch.tensor(self.calc_seg(), dtype=torch.long)
+        self.con = torch.tensor(self.calc_con(), dtype=torch.long)
+        self.pos = torch.tensor(self.calc_pos(), dtype=torch.long)
 
     def calc_onehot(self, vectorize: bool = False):
         # 输入工作描述内容，输出每个字符的独热码。若vectorize为True则输出为一个np矩阵，每一列为describe_text中每一个字符的独热码；
@@ -103,13 +104,29 @@ class TextFeature:
         return con_eig
 
 
-def preprocess(data_path: str, column_name: str):
+def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
     if data_path[-4:] == '.csv':
         text = pd.read_csv(data_path)[column_name].to_list()
-    else:
+    elif data_path[-5:] == '.xlsx':
         text = pd.read_excel(data_path)[column_name].to_list()
+    else:
+        with open(data_path, 'r') as f:
+            text = f.read().strip('\n').replace('@', '').split('\n')
+    characters, n_characters = {}, 0
+    for describe in text:
+        for c in describe:
+            if c not in characters and c != '\n':
+                characters[c] = n_characters
+                n_characters = n_characters + 1
     for pos in range(len(text)):
+        describe = text[pos]
+        for c in describe:
+            if c not in characters and c != '\n':
+                characters[c] = n_characters
+                n_characters = n_characters + 1
         text[pos] = TextFeature(text[pos].replace('\n', ''))
+        text[pos].onehot = torch.tensor([characters[c] for c in text[pos].text])
+    return text, characters
 
 
 # 若直接运行该程序，则为使用jd_sample.csv更新字符表character.txt
