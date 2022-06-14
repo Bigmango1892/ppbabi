@@ -53,7 +53,7 @@ class BiLSTM_CRF(nn.Module):
         self.lstm = nn.LSTM(embedding_dim, hidden_dim // 2, num_layers=1, bidirectional=True)
 
         # Maps the output of the LSTM into tag space.
-        self.hidden2tag = nn.Linear(hidden_dim, self.tagset_size)
+        self.hidden2tag = nn.Linear(hidden_dim+3, self.tagset_size)
 
         # Matrix of transition parameters.  Entry i,j is the score of
         # transitioning *to* i *from* j.
@@ -69,18 +69,21 @@ class BiLSTM_CRF(nn.Module):
     def init_hidden(self):
         return torch.randn(2, 1, self.hidden_dim // 2), torch.randn(2, 1, self.hidden_dim // 2)
 
-    def _get_lstm_features(self, sentence):
-        self.hidden = self.init_hidden()
+    def _get_lstm_features(self, sentence_onehot):
+        # self.hidden = self.init_hidden()
         # Embedding layer -- input: sentence code; output: embedded matrix
         # view方法重新整合tensor维度，前两参数为维度，-1表示自动匹配
-        embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
+        embeds = self.word_embeds(sentence_onehot).view(len(sentence_onehot), 1, -1)
         # LSTM layer -- input: eigenvalue, hidden layers matrix; output: LSTM out, new hidden layers matrix
         # 之后重新整合lstm_out维度
         lstm_out, self.hidden = self.lstm(embeds, self.hidden)
-        lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
+        lstm_out = lstm_out.view(len(sentence_onehot), self.hidden_dim)
+        return lstm_out, embeds.view(len(sentence_onehot), self.hidden_dim)
 
-        lstm_feats = self.hidden2tag(lstm_out)
-        return lstm_feats
+    def _feat_splice(self, sentence, lstm_feats, embeds):
+        eig = torch.cat((embeds, sentence.pos.view(-1, 1), sentence.con.view(-1, 1), sentence.seg.view(-1, 1)), 1)
+        split_feat = self.hidden2tag(eig)
+        return split_feat
 
     def _forward_alg(self, feats):
         # TODO 查找CRF实现
@@ -119,9 +122,10 @@ class BiLSTM_CRF(nn.Module):
         return score
 
     def loss_function(self, sentence, tags):
-        feats = self._get_lstm_features(sentence.onehot)
-        forward_score = self._forward_alg(feats)
-        gold_score = self._score_sentence(feats, tags)
+        lstm_feats, embeds = self._get_lstm_features(sentence.onehot)
+        splice_feats = self._feat_splice(sentence, lstm_feats, embeds)
+        forward_score = self._forward_alg(splice_feats)
+        gold_score = self._score_sentence(splice_feats, tags)
         return forward_score - gold_score
     # TODO 添加其他特征值进入模型
 
@@ -171,10 +175,10 @@ class BiLSTM_CRF(nn.Module):
 
     def forward(self, sentence):  # don't confuse this with _forward_alg above.
         # Get the emission scores from the BiLSTM
-        lstm_feats = self._get_lstm_features(sentence)
-
+        lstm_feats, embeds = self._get_lstm_features(sentence.onehot)
+        splice_feats = self._feat_splice(sentence, lstm_feats, embeds)
         # Find the best path, given the features.
-        score, tag_seq = self._viterbi_decode(lstm_feats)
+        score, tag_seq = self._viterbi_decode(splice_feats)
         # return score, tag_seq
         return tag_seq
 
