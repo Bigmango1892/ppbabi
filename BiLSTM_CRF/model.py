@@ -184,8 +184,8 @@ class BiLSTM_CRF(nn.Module):
 
 
 # 导入数据与数据预处理
-data, characters = input_layer.preprocess('../textBOI.txt')
-with open('../BOI.txt', 'r') as f:
+data, characters = input_layer.preprocess('../BOI_data/data_jd.txt')
+with open('../BOI_data/data_bio.txt', 'r') as f:
     result = f.read().strip('\n').split(sep='\n')
 # 随机化数据集并选取前80%作训练集，后20%作测试集
 random.seed(836)

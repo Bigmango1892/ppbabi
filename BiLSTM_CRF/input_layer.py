@@ -92,7 +92,7 @@ class TextFeature:
                     i_words = i_words + len(self.words[i_pos].word)
                     i_pos = i_pos + 1
                     continue
-            if self.words[i_pos].flag in CONPOS['c']:
+            if self.words[i_pos].flag in CONPOS['c'] or self.words[i_pos].word in CONPOS['c']:
                 if i_pos > 0 and i_pos + 1 < len(self.words) and \
                         self.words[i_pos - 1].flag in CONPOS['n'] and self.words[i_pos + 1].flag in CONPOS['n']:
                     word_len = len(self.words[i_pos].word)
@@ -111,7 +111,7 @@ def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
         text = pd.read_excel(data_path)[column_name].to_list()
     else:
         with open(data_path, 'r') as _f:
-            text = _f.read().strip('\n').replace('@', '').split('\n')
+            text = _f.read().strip('\n').split('\n')
     characters, n_characters = {}, 0
     for pos in range(len(text)):
         describe = text[pos].replace('\n', '')
