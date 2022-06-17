@@ -184,8 +184,8 @@ class BiLSTM_CRF(nn.Module):
 
 
 # 导入数据与数据预处理
-data, characters = input_layer.preprocess('../BOI_data/data_jd.txt')
-with open('../BOI_data/data_bio.txt', 'r') as f:
+data, characters = input_layer.preprocess('../BIO_data/data_jd.txt')
+with open('../BIO_data/data_bio.txt', 'r') as f:
     result = f.read().strip('\n').split(sep='\n')
 # 随机化数据集并选取前80%作训练集，后20%作测试集
 random.seed(836)
@@ -211,7 +211,9 @@ for epoch in range(EPOCH):
 
         # Step 2. Get our inputs ready for the network, that is,
         # turn them into Tensors of word indices.
-        targets = torch.tensor([tag_to_ix[t] for t in train_result[i]], dtype=torch.long)
+        tags = train_result[i].split(' ')
+        tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
+        targets = torch.tensor([tag_to_ix_new[t] for t in tags], dtype=torch.long)
 
         # Step 3. Run our forward pass.
         loss = model.loss_function(train_data[i], targets)
