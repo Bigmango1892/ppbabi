@@ -82,7 +82,8 @@ class BiLSTM_CRF(nn.Module):
 
     def _feat_splice(self, sentence, lstm_feats, embeds):
         eig = torch.cat((embeds, sentence.pos.view(-1, 1), sentence.con.view(-1, 1), sentence.seg.view(-1, 1)), 1)
-        split_feat = self.hidden2tag(eig)
+        hidden_feat = self.hidden2tag(eig)
+        split_feat = torch.tanh(hidden_feat)
         return split_feat
 
     def _forward_alg(self, feats):
