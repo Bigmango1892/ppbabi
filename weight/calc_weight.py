@@ -25,12 +25,19 @@ with open('../BIO_data/data_bio.txt', 'r') as f:
     bio_texts = f.read().strip('\n').split('\n')
 
 if __name__ == '__main__':
-    count = {}
+    count_index = {}
     for i in range(len(jd_texts)):
         jd = jd_texts[i]
         bio = bio_texts[i].split(' ')
         tags = find_tags(jd, bio)
-        weight, alpha, flag, beta = 1, 0.96, False, 1.3
+        # weight, alpha, flag, beta = 1, 0.96, False, 1.3
+        num_total = -1
+        for word, tag in tags:
+            if tag == 'AbilityTag':
+                num_total = num_total + 1
+        if num_total == 0:
+            continue
+        num = -1
         for word, tag in tags:
             # if tag == 'LevelTag':
             #     flag = True
@@ -46,9 +53,18 @@ if __name__ == '__main__':
             #     count[word] = count.get(word, 0) + 1
 
             if tag == 'AbilityTag':
-                count[word] = count.get(word, 0) + weight
-                weight = weight * alpha
+                num = num + 1
+                word = word.replace('编程', '').replace('能力', '').upper()
+                if word not in count_index:
+                    count_index[word] = []
+                count_index[word].append(num/num_total)
+                # count[word] = count.get(word, 0) + weight
+                # weight = weight * alpha
 
-    index = np.argsort(list(count.values()))[-1::-1]
+    count = {x: len(l) for x, l in count_index.items()}
+    mean_value = {key: np.mean(value) for key, value in count_index.items()}
+    results = {key: count[key] * (1 - mean_value[key]) for key in count.keys()}
+    index = np.argsort(list(results.values()))[-1::-1]
     for i in range(20):
-        print(list(count.keys())[index[i]], list(count.values())[index[i]])
+        print(list(results.keys())[index[i]], list(results.values())[index[i]])
+    print()
