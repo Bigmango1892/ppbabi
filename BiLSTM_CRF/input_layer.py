@@ -103,14 +103,15 @@ class TextFeature:
             i_pos = i_pos + 1
         return con_eig
 
-
+# feature_all: list,元素为tensor,长度为4*len(describe)+1(pos)
 def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
+    feature_all = []
     if data_path[-4:] == '.csv':
         text = pd.read_csv(data_path)[column_name].to_list()
     elif data_path[-5:] == '.xlsx':
         text = pd.read_excel(data_path)[column_name].to_list()
     else:
-        with open(data_path, 'r') as _f:
+        with open(data_path, 'r',encoding='utf-8') as _f:
             text = _f.read().strip('\n').split('\n')
     characters, n_characters = {}, 0
     for pos in range(len(text)):
@@ -121,7 +122,10 @@ def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
                 n_characters = n_characters + 1
         text[pos] = TextFeature(describe)
         text[pos].onehot = torch.tensor([characters[c] for c in text[pos].text])
-    return text, characters
+        index = torch.tensor(pos, dtype=torch.long).unsqueeze(0)
+        feature_all.append(torch.cat([text[pos].onehot,text[pos].seg,text[pos].con,text[pos].pos,index]))
+
+    return text, characters, feature_all
 
 
 # # 若直接运行该程序，则为使用jd_sample.csv更新字符表character.txt
