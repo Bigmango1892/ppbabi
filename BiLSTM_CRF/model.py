@@ -53,7 +53,7 @@ class BiLSTM_CRF(nn.Module):
         self.lstm = nn.LSTM(embedding_dim, hidden_dim // 2, num_layers=1, bidirectional=True)
 
         # Maps the output of the LSTM into tag space.
-        self.hidden2tag = nn.Linear(hidden_dim+3, self.tagset_size)
+        self.hidden2tag = nn.Linear(2 * hidden_dim + 3, self.tagset_size)
 
         # Matrix of transition parameters.  Entry i,j is the score of
         # transitioning *to* i *from* j.
@@ -70,7 +70,7 @@ class BiLSTM_CRF(nn.Module):
         return torch.randn(2, 1, self.hidden_dim // 2), torch.randn(2, 1, self.hidden_dim // 2)
 
     def _get_lstm_features(self, sentence_onehot):
-        # self.hidden = self.init_hidden()
+        self.hidden = self.init_hidden()
         # Embedding layer -- input: sentence code; output: embedded matrix
         # view方法重新整合tensor维度，前两参数为维度，-1表示自动匹配
         embeds = self.word_embeds(sentence_onehot).view(len(sentence_onehot), 1, -1)
@@ -81,7 +81,8 @@ class BiLSTM_CRF(nn.Module):
         return lstm_out, embeds.view(len(sentence_onehot), self.hidden_dim)
 
     def _feat_splice(self, sentence, lstm_feats, embeds):
-        eig = torch.cat((embeds, sentence.pos.view(-1, 1), sentence.con.view(-1, 1), sentence.seg.view(-1, 1)), 1)
+        eig = torch.cat((lstm_feats, embeds,
+                         sentence.pos.view(-1, 1), sentence.con.view(-1, 1), sentence.seg.view(-1, 1)), 1)
         hidden_feat = self.hidden2tag(eig)
         split_feat = torch.tanh(hidden_feat)
         return split_feat
