@@ -235,6 +235,12 @@ test_result = result[int(len(data) * 0.4):]
 
 # 加载训练好的模型
 print('=============加载训练好的模型，进行测试=============')
+# 导入测试数据
+data, characters = input_layer.preprocess('../BIO_data/data_jd.txt')
+with open('../BIO_data/data_bio.txt', 'r') as f:
+    result = f.read().strip('\n').split(sep='\n')
+test_data = data
+test_result = result
 model_path = 'ner_trained_model.cpt'
 trained_ner_model = torch.load(model_path)
 tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
@@ -242,6 +248,7 @@ with torch.no_grad():
     f = xlwt.Workbook('encoding = utf-8')
     sheet1 = f.add_sheet('sheet1', cell_overwrite_ok=True)
     for i in range(len(test_data)):
+        print(i)
         precheck_sent = test_data[i]
         test_text = precheck_sent.text
 
@@ -259,6 +266,7 @@ with torch.no_grad():
             test_pred_words.append(''.join(words[pivot[-1]:]))
 
         tags = test_result[i].split(' ')
+        # print(tags)
         test_gt = [tag_to_ix_new[t] for t in tags]
         test_gt_0 = [k for k, j in enumerate(test_gt) if j == 0]
         test_gt_1 = [k for k, j in enumerate(test_gt) if j == 1]
@@ -279,6 +287,6 @@ with torch.no_grad():
         sheet1.write(i, 0, ','.join(test_pred_words))
         sheet1.write(i, 1, ','.join(test_gt_words))
         sheet1.write(i, 2, test_text)
-    f.save('test_result.xls')
+    f.save('test_result_all.xls')
 
         # print('训练后模型的预测：' + str(trained_ner_model(precheck_sent)))
