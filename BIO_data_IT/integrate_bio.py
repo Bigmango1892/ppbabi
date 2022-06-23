@@ -15,16 +15,6 @@ for file in files:
     if file[-4:] == '.bio':
         with open(file, 'r') as f:
             text_list = f.read().split(sep=sep)[:-1]
-        print(len(text_list))
-        if len(text_list) != 50:
-            del_word_col = []
-            for text in text_list:
-                if text[0] == '\n':
-                    del_word_col.append(text_list.index(text))
-            for col in del_word_col:
-                text_list[col] = text_list[col][178:]
-                print([text_list[col]])
-                print('')
 
         for text in text_list:
             text_cuts = [[x[0], x[2:]] for x in text.split('\n')]
