@@ -2,6 +2,7 @@ import random
 import input_layer
 import torch
 import torch.nn as nn
+import xlwt
 
 # 设置
 torch.manual_seed(1)
@@ -185,11 +186,11 @@ class BiLSTM_CRF(nn.Module):
         return tag_seq
 
 
-# 导入数据与数据预处理
+# # 导入数据与数据预处理
 data, characters = input_layer.preprocess('../BIO_data/data_jd.txt')
 with open('../BIO_data/data_bio.txt', 'r') as f:
     result = f.read().strip('\n').split(sep='\n')
-# 随机化数据集并选取前80%作训练集，后20%作测试集
+# # 随机化数据集并选取前80%作训练集，后20%作测试集
 random.seed(836)
 random.shuffle(data)
 random.seed(836)
@@ -198,44 +199,86 @@ train_data = data[:int(len(data) * 0.4)]
 train_result = result[:int(len(data) * 0.4)]
 test_data = data[int(len(data) * 0.4):]
 test_result = result[int(len(data) * 0.4):]
-
-# 搭建模型
-tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
-model = BiLSTM_CRF(vocab_size=len(characters), tag_to_ix=tag_to_ix, embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM)
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
-
-print('=============开始BiLSTM+CRF模型的训练=============')
-for epoch in range(EPOCH):
-    for i in range(len(train_data)):
-        # Step 1. Remember that Pytorch accumulates gradients.
-        # We need to clear them out before each instance
-        model.zero_grad()
-
-        # Step 2. Get our inputs ready for the network, that is,
-        # turn them into Tensors of word indices.
-        tags = train_result[i].split(' ')
-        tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
-        targets = torch.tensor([tag_to_ix_new[t] for t in tags], dtype=torch.long)
-
-        # Step 3. Run our forward pass.
-        loss = model.loss_function(train_data[i], targets)
-
-        # Step 4. Compute the loss, gradients, and update the parameters by
-        # calling optimizer.step()
-        loss.backward()
-        optimizer.step()
-
-    print(f'模型训练第{epoch}轮的Loss值为：{loss[0]}')
-
-# 保存训练好的模型
-output_path = 'ner_trained_model.cpt'
-torch.save(model, output_path)
-print('=============训练结束，保存训练好的模型=============\n\n')
+#
+# # 搭建模型
+# tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
+# model = BiLSTM_CRF(vocab_size=len(characters), tag_to_ix=tag_to_ix, embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM)
+# optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+#
+# print('=============开始BiLSTM+CRF模型的训练=============')
+# for epoch in range(EPOCH):
+#     for i in range(len(train_data)):
+#         # Step 1. Remember that Pytorch accumulates gradients.
+#         # We need to clear them out before each instance
+#         model.zero_grad()
+#
+#         # Step 2. Get our inputs ready for the network, that is,
+#         # turn them into Tensors of word indices.
+#         tags = train_result[i].split(' ')
+#         tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
+#         targets = torch.tensor([tag_to_ix_new[t] for t in tags], dtype=torch.long)
+#
+#         # Step 3. Run our forward pass.
+#         loss = model.loss_function(train_data[i], targets)
+#
+#         # Step 4. Compute the loss, gradients, and update the parameters by
+#         # calling optimizer.step()
+#         loss.backward()
+#         optimizer.step()
+#
+#     print(f'模型训练第{epoch}轮的Loss值为：{loss[0]}')
+#
+# # 保存训练好的模型
+# output_path = 'ner_trained_model.cpt'
+# torch.save(model, output_path)
+# print('=============训练结束，保存训练好的模型=============\n\n')
 
 # 加载训练好的模型
 print('=============加载训练好的模型，进行测试=============')
 model_path = 'ner_trained_model.cpt'
 trained_ner_model = torch.load(model_path)
+tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
 with torch.no_grad():
-    precheck_sent = test_data[0]
-    print('训练后模型的预测：' + str(model(precheck_sent)))
+    f = xlwt.Workbook('encoding = utf-8')
+    sheet1 = f.add_sheet('sheet1', cell_overwrite_ok=True)
+    for i in range(len(test_data)):
+        precheck_sent = test_data[i]
+        test_text = precheck_sent.text
+
+        test_pred = trained_ner_model(precheck_sent)
+        test_pred_1 = [k for k, j in enumerate(test_pred) if j == 1]
+        test_pred_0 = [k for k, j in enumerate(test_pred) if j == 0]
+        words = [test_text[t] for t in sorted(test_pred_1 + test_pred_0)]
+        pivot = [k for k in [sorted(test_pred_1 + test_pred_0).index(t) for t in test_pred_0]]
+        if len(pivot) == 1:
+            test_pred_words= [''.join(words[pivot[-1]:])]
+        elif len(pivot) == 0:
+            test_pred_words = []
+        else:
+            test_pred_words = [''.join(words[pivot[k]:pivot[k+1]]) for k in range(len(pivot)-1)]
+            test_pred_words.append(''.join(words[pivot[-1]:]))
+
+        tags = test_result[i].split(' ')
+        test_gt = [tag_to_ix_new[t] for t in tags]
+        test_gt_0 = [k for k, j in enumerate(test_gt) if j == 0]
+        test_gt_1 = [k for k, j in enumerate(test_gt) if j == 1]
+        test_gt_01 = [k for k, j in enumerate(test_gt) if j == 1 or j == 0]
+        words = [test_text[t] for t in sorted(test_gt_1 + test_gt_0)]
+        pivot = [k for k in [sorted(test_gt_1 + test_gt_0).index(t) for t in test_gt_0]]
+        if len(pivot) == 1:
+            test_gt_words = [''.join(words[pivot[-1]:])]
+        elif len(pivot) == 0:
+            test_gt_words = []
+            # print(test_text)
+            # print(tags)
+            # print(test_pred_words)
+        else:
+            test_gt_words = [''.join(words[pivot[k]:pivot[k + 1]]) for k in range(len(pivot) - 1)]
+            test_gt_words.append(''.join(words[pivot[-1]:]))
+
+        sheet1.write(i, 0, ','.join(test_pred_words))
+        sheet1.write(i, 1, ','.join(test_gt_words))
+        sheet1.write(i, 2, test_text)
+    f.save('test_result.xls')
+
+        # print('训练后模型的预测：' + str(trained_ner_model(precheck_sent)))
