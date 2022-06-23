@@ -19,47 +19,32 @@ def find_tags(jd_text: str, bio: list):
     return tags
 
 
+def find_ability(tags_all: list):
+    tags = []
+    for word, tag in tags_all:
+        if tag == 'AbilityTag':
+            tags.append(word)
+    return tags
+
+
 with open('../BIO_data/data_jd.txt', 'r') as f:
     jd_texts = f.read().strip('\n').split('\n')
 with open('../BIO_data/data_bio.txt', 'r') as f:
     bio_texts = f.read().strip('\n').split('\n')
 
 if __name__ == '__main__':
-    count_index = {}
-    for i in range(len(jd_texts)):
-        jd = jd_texts[i]
-        bio = bio_texts[i].split(' ')
-        tags = find_tags(jd, bio)
-        # weight, alpha, flag, beta = 1, 0.96, False, 1.3
-        num_total = -1
-        for word, tag in tags:
-            if tag == 'AbilityTag':
-                num_total = num_total + 1
-        if num_total == 0:
-            continue
-        num = -1
-        for word, tag in tags:
-            # if tag == 'LevelTag':
-            #     flag = True
-            #     continue
-            # if flag:
-            #     count[word] = count.get(word, 0) + weight * beta
-            #     flag = False
-            # else:
-            #     count[word] = count.get(word, 0) + weight
-            # weight = weight * alpha
-
-            # if tag == 'AbilityTag':
-            #     count[word] = count.get(word, 0) + 1
-
-            if tag == 'AbilityTag':
-                num = num + 1
-                word = word.replace('编程', '').replace('能力', '').upper()
-                if word not in count_index:
-                    count_index[word] = []
-                count_index[word].append(num/num_total)
-                # count[word] = count.get(word, 0) + weight
-                # weight = weight * alpha
+    count_index = []
+    for jd, bio in zip(jd_texts, bio_texts):
+        tags = find_tags(jd, bio.split(' '))
+        tags = find_ability(tags)
+        item = []
+        for i, word in enumerate(tags):
+            word = word.replace('编程', '').replace('能力', '').lower()
+            if len(tags) == 1:
+                item.append((word, 0))
+            else:
+                item.append((word, i/(len(tags)-1)))
+        count_index.append(item)
 
     count = {x: len(l) for x, l in count_index.items()}
     mean_value = {key: np.mean(value) for key, value in count_index.items()}
