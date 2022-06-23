@@ -110,7 +110,7 @@ def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
     elif data_path[-5:] == '.xlsx':
         text = pd.read_excel(data_path)[column_name].to_list()
     else:
-        with open(data_path, 'r') as _f:
+        with open(data_path, 'r', encoding='utf8') as _f:
             text = _f.read().strip('\n').split('\n')
     characters, n_characters = {}, 0
     for pos in range(len(text)):

@@ -194,10 +194,10 @@ random.seed(836)
 random.shuffle(data)
 random.seed(836)
 random.shuffle(result)
-train_data = data[:int(len(data) * 0.8)]
-train_result = result[:int(len(data) * 0.8)]
-test_data = data[int(len(data) * 0.8):]
-test_result = result[int(len(data) * 0.8):]
+train_data = data[:int(len(data) * 0.4)]
+train_result = result[:int(len(data) * 0.4)]
+test_data = data[int(len(data) * 0.4):]
+test_result = result[int(len(data) * 0.4):]
 
 # 搭建模型
 tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
