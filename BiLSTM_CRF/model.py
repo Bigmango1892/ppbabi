@@ -199,39 +199,42 @@ train_data = data[:int(len(data) * 0.4)]
 train_result = result[:int(len(data) * 0.4)]
 test_data = data[int(len(data) * 0.4):]
 test_result = result[int(len(data) * 0.4):]
-#
-# # 搭建模型
-# tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
-# model = BiLSTM_CRF(vocab_size=len(characters), tag_to_ix=tag_to_ix, embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM)
-# optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
-#
-# print('=============开始BiLSTM+CRF模型的训练=============')
-# for epoch in range(EPOCH):
-#     for i in range(len(train_data)):
-#         # Step 1. Remember that Pytorch accumulates gradients.
-#         # We need to clear them out before each instance
-#         model.zero_grad()
-#
-#         # Step 2. Get our inputs ready for the network, that is,
-#         # turn them into Tensors of word indices.
-#         tags = train_result[i].split(' ')
-#         tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
-#         targets = torch.tensor([tag_to_ix_new[t] for t in tags], dtype=torch.long)
-#
-#         # Step 3. Run our forward pass.
-#         loss = model.loss_function(train_data[i], targets)
-#
-#         # Step 4. Compute the loss, gradients, and update the parameters by
-#         # calling optimizer.step()
-#         loss.backward()
-#         optimizer.step()
-#
-#     print(f'模型训练第{epoch}轮的Loss值为：{loss[0]}')
-#
-# # 保存训练好的模型
-# output_path = 'ner_trained_model.cpt'
-# torch.save(model, output_path)
-# print('=============训练结束，保存训练好的模型=============\n\n')
+
+# 搭建模型
+tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
+model = BiLSTM_CRF(vocab_size=len(characters), tag_to_ix=tag_to_ix, embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM)
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+
+print('=============开始BiLSTM+CRF模型的训练=============')
+for epoch in range(EPOCH):
+    print("Epoch %-4d " % epoch, end='')
+    for i in range(len(train_data)):
+
+        # Step 1. Remember that Pytorch accumulates gradients.
+        # We need to clear them out before each instance
+        model.zero_grad()
+
+        # Step 2. Get our inputs ready for the network, that is,
+        # turn them into Tensors of word indices.
+        tags = train_result[i].split(' ')
+        tag_to_ix_new = {"B-AbilityTag": 0, "I-AbilityTag": 1, "O": 2, START_TAG: 3, STOP_TAG: 4, 'B-LevelTag': 2, 'I-LevelTag': 2}
+        targets = torch.tensor([tag_to_ix_new[t] for t in tags], dtype=torch.long)
+
+        # Step 3. Run our forward pass.
+        loss = model.loss_function(train_data[i], targets)
+
+        # Step 4. Compute the loss, gradients, and update the parameters by
+        # calling optimizer.step()
+        loss.backward()
+        optimizer.step()
+        if i % 100 == 0:
+            print('%8.2f' % loss.item(), end='')
+    print('')
+
+# 保存训练好的模型
+output_path = 'ner_trained_model.cpt'
+torch.save(model, output_path)
+print('=============训练结束，保存训练好的模型=============\n\n')
 
 # 加载训练好的模型
 print('=============加载训练好的模型，进行测试=============')
