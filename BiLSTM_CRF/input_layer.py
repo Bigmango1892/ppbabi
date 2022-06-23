@@ -1,10 +1,11 @@
 import pandas as pd
+import numpy as np
 import jieba.posseg
 import torch
 
-# # 读取所有的字符
-# with open('./characters.txt', 'r', encoding='utf8') as f:
-#     CHAR = f.read().split(sep='\n')
+# 读取所有的字符
+with open('./characters.txt', 'r', encoding='utf8') as f:
+    CHAR = {c: i for i, c in enumerate(f.read().split(sep='\n'))}
 
 # 读取词性标注对应表
 with open('./posseg.txt', 'r', encoding='utf8') as f:
@@ -23,21 +24,21 @@ class TextFeature:
         else:
             self.words = jieba.posseg.lcut(text)
         # self.onehot = torch.tensor(self.calc_onehot(vectorize=False), dtype=torch.long)
-        self.onehot = None
+        self.onehot = torch.tensor(self.calc_onehot(), dtype=torch.long)
         self.seg = torch.tensor(self.calc_seg(), dtype=torch.long)
         self.con = torch.tensor(self.calc_con(), dtype=torch.long)
         self.pos = torch.tensor(self.calc_pos(), dtype=torch.long)
 
-    # def calc_onehot(self, vectorize: bool = False):
-    #     # 输入工作描述内容，输出每个字符的独热码。若vectorize为True则输出为一个np矩阵，每一列为describe_text中每一个字符的独热码；
-    #     # 若vectorize为False则输出为一个list列表，每个元素代表describe_text中每一个字符的独热非0元的位置
-    #     char_pos = [CHAR.index(char) for char in self.text]
-    #     if not vectorize:
-    #         return char_pos
-    #     oh_code = np.zeros((len(CHAR), len(self.text)))
-    #     for char in range(len(self.text)):
-    #         oh_code[char_pos[char], char] = 1
-    #     return oh_code
+    def calc_onehot(self, vectorize: bool = False):
+        # 输入工作描述内容，输出每个字符的独热码。若vectorize为True则输出为一个np矩阵，每一列为describe_text中每一个字符的独热码；
+        # 若vectorize为False则输出为一个list列表，每个元素代表describe_text中每一个字符的独热非0元的位置
+        char_pos = [CHAR[char] for char in self.text]
+        if not vectorize:
+            return char_pos
+        oh_code = np.zeros((len(CHAR), len(self.text)))
+        for char in range(len(self.text)):
+            oh_code[char_pos[char], char] = 1
+        return oh_code
 
     def calc_seg(self):
         # 输入工作描述的jieba分词（带词性）结果，输出为每个字符的位置特征seg，其值为每个字符在所在的词语中的相对位置。如：
@@ -112,32 +113,27 @@ def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
     else:
         with open(data_path, 'r', encoding='utf8') as _f:
             text = _f.read().strip('\n').split('\n')
-    characters, n_characters = {}, 0
+    text_features = []
     for pos in range(len(text)):
         describe = text[pos].replace('\n', '')
-        for c in describe:
-            if c not in characters and c != '\n':
-                characters[c] = n_characters
-                n_characters = n_characters + 1
-        text[pos] = TextFeature(describe)
-        text[pos].onehot = torch.tensor([characters[c] for c in text[pos].text])
-    return text, characters
+        text_features.append(TextFeature(describe))
+    return text_features, CHAR
 
 
-# # 若直接运行该程序，则为使用jd_sample.csv更新字符表character.txt
-# # 注：字符表中去除了'\n'字符
-# if __name__ == "__main__":
-#     # 指定JD表路径和字段名
-#     jd_path = './jd_sample.csv'
-#     field_name = '工作内容（总的）'
-#
-#     df = pd.read_csv(jd_path)
-#     characters = []
-#     for i in range(len(df)):
-#         for c in df.loc[i, field_name]:
-#             if c not in characters:
-#                 characters.append(c)
-#     if '\n' in characters:
-#         characters.remove('\n')
-#     with open('./characters.txt', 'w', encoding='utf8') as f:
-#         print('\n'.join(characters), end='', file=f)
+# 若直接运行该程序，则为使用jd_sample.csv更新字符表character.txt
+# 注：字符表中去除了'\n'字符
+if __name__ == "__main__":
+    # 指定JD表路径和字段名
+    jd_path = '../BIO_data/data_jd.txt'
+
+    with open(jd_path, 'r', encoding='utf8') as f:
+        jd_list = f.read().strip('\n').split('\n')
+    characters = []
+    for text in jd_list:
+        for c in text:
+            if c not in characters:
+                characters.append(c)
+    if '\n' in characters:
+        characters.remove('\n')
+    with open('./characters.txt', 'w', encoding='utf8') as f:
+        print('\n'.join(characters), end='', file=f)
