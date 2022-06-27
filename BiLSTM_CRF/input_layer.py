@@ -120,7 +120,9 @@ def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
             text = _f.read().strip('\n').split('\n')
     text_features = []
     for pos in range(len(text)):
-        describe = text[pos].replace('\n', '')
+        describe = text[pos].replace('\n', '').replace(' ', '')
+        if len(describe) == 0:
+            describe = '。'
         text_features.append(TextFeature(describe))
     return text_features, CHAR
 
