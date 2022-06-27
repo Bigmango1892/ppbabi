@@ -32,7 +32,12 @@ class TextFeature:
     def calc_onehot(self, vectorize: bool = False):
         # 输入工作描述内容，输出每个字符的独热码。若vectorize为True则输出为一个np矩阵，每一列为describe_text中每一个字符的独热码；
         # 若vectorize为False则输出为一个list列表，每个元素代表describe_text中每一个字符的独热非0元的位置
-        char_pos = [CHAR[char] for char in self.text]
+        char_pos = []
+        for char in self.text:
+            if char in CHAR:
+                char_pos.append(CHAR[char])
+            else:
+                char_pos.append(2520)
         if not vectorize:
             return char_pos
         oh_code = np.zeros((len(CHAR), len(self.text)))
