@@ -3,7 +3,7 @@ import math
 import pickle
 import openpyxl as op
 
-key_word = '前端开发工程师'
+key_word = '游戏策划'
 column = None
 
 
@@ -58,7 +58,7 @@ for words, poses in zip(abilities, count_pos):
 
 count_mean = {key: np.mean(value) for key, value in count_index.items()}
 count_len = {key: len(value) for key, value in count_index.items()}
-with open('./std_factor0630_细分.data', 'rb') as f:
+with open('./std_factor0630.data', 'rb') as f:
     std_fact = pickle.load(f)
 results = {key: result_fun(length_fun(count_len[key]), position_fun(1 - count_mean[key])) for key in count_len.keys()}
 results = {key: value * std_fact[key] for key, value in results.items() if key in std_fact}

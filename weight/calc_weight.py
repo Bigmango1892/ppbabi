@@ -24,7 +24,7 @@ if __name__ == '__main__':
     with open('words_reseted.data', 'rb') as f:
         words = pickle.load(f)
 
-    groups = titles.groupby(by='岗位细分').groups
+    groups = titles.groupby(by='行业').groups
     group_len = {key: len(value) for key, value in groups.items()}
     group_count = {}
     for key, value in groups.items():
@@ -39,5 +39,5 @@ if __name__ == '__main__':
     # word_len_factor = [sum(count) for count in words_count]
     words_count_normalized = [[n/list(group_len.values())[i] for i, n in enumerate(count)] for count in words_count]
     std_factor = {key: np.std(count)/np.mean(count) for key, count in zip(word_dic, words_count_normalized)}
-    with open('./std_factor0630_细分.data', 'wb') as f:
+    with open('./std_factor0630.data', 'wb') as f:
         pickle.dump(std_factor, f)
