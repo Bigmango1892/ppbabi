@@ -7,13 +7,21 @@ with open('JD岗位分类.txt', 'r') as f:
 with open('../weight/words_reseted.data', 'rb') as f:
     words = pickle.load(f)
 
+analyse.std_file = 'std_factor0630_细分.data'
 output_data = []
 for key, value in index.items():
     analyse.key_word = key
     ability = [words[i] for i in value if i < len(words)]
     analyse.abilities = ability
     results, ind = analyse.count_index()
-    output_data.append([key] + [list(results.keys())[ind[i]] for i in range(10) if i < len(ind)])
+    output_abi = [(list(results.keys())[ind[i]], list(results.values())[ind[i]]) for i in range(10) if i < len(ind)]
+    num = len(output_data)
+    output_data.append([key])
+    for i in range(len(output_abi)):
+        output_data[num].extend([output_abi[i][0], output_abi[i][1]])
 
-output_data = pd.DataFrame(data=output_data)
-output_data.to_csv('岗位技能词.csv', index=False)
+columns = ['岗位名称']
+for i in range(10):
+    columns.extend(['技能词{}'.format(i+1), '特征值{}'.format(i+1)])
+output_data = pd.DataFrame(data=output_data, columns=columns)
+output_data.to_csv('岗位技能词_v5.csv', index=False)

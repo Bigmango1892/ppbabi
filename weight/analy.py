@@ -5,7 +5,7 @@ import openpyxl as op
 
 key_word = '产品经理'
 column = None
-
+std_file = 'std_factor0630.data'
 
 def length_fun(n: int):
     return n
@@ -61,7 +61,7 @@ def count_index():
 
     count_mean = {key: np.mean(value) for key, value in count_index.items()}
     count_len = {key: len(value) for key, value in count_index.items()}
-    with open('../weight/std_factor0630_大类.data', 'rb') as f:
+    with open('../weight/{}'.format(std_file), 'rb') as f:
         std_fact = pickle.load(f)
     results = {key: result_fun(length_fun(count_len[key]), position_fun(1 - count_mean[key])) for key in count_len.keys()}
     results = {key: value * std_fact[key] for key, value in results.items() if key in std_fact}
