@@ -5,7 +5,7 @@ import openpyxl as op
 
 key_word = '产品经理'
 column = None
-std_file = 'std_factor0630.data'
+std_file = 'std_factor0630_行业.data'
 
 def length_fun(n: int):
     return n
