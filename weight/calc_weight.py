@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 
 
-if __name__ == '__main__':
+def calc_std():
     with open('words_reseted.data', 'rb') as f:
         words = pickle.load(f)
     category = ['行业', '岗位大类', '岗位细分']

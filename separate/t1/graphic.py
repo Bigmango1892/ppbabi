@@ -16,6 +16,12 @@ labels = [Label() for _ in range(len(word_box))]
 buttons_y, buttons_n = [Button() for _ in range(len(word_box))], [Button() for _ in range(len(word_box))]
 cbx1, cbx2 = IntVar(), IntVar()
 check_box1, check_box2 = Checkbutton(), Checkbutton()
+count_text = StringVar()
+
+
+def count_done():
+    global count_text, TAGS
+    count_text.set('标注进度：%4d/%4d' % (len(TAGS) - TAGS.count(0), len(TAGS)))
 
 
 def page_up():
@@ -34,6 +40,7 @@ def page_up():
             labels[i].configure(bg='white')
     with open('tags.data', 'wb') as f:
         dump(TAGS, f)
+    count_done()
 
 
 def page_down():
@@ -58,18 +65,21 @@ def page_down():
             labels[i].configure(bg='white')
     with open('tags.data', 'wb') as f:
         dump(TAGS, f)
+    count_done()
 
 
 def yes_button(pos: int):
     global labels, TAGS, HEAD
     labels[pos].configure(bg=Color2)
     TAGS[HEAD+pos] = 1
+    count_done()
 
 
 def no_button(pos: int):
     global labels, TAGS, HEAD
     labels[pos].configure(bg=Color1)
     TAGS[HEAD + pos] = 2
+    count_done()
 
 
 def exit_GUI():
@@ -84,6 +94,7 @@ def select_all_n():
     for pos in range(len(labels)):
         labels[pos].configure(bg=Color1)
         TAGS[HEAD + pos] = 2
+    count_done()
 
 
 def select_all_y():
@@ -91,6 +102,7 @@ def select_all_y():
     for pos in range(len(labels)):
         labels[pos].configure(bg=Color2)
         TAGS[HEAD + pos] = 1
+    count_done()
 
 
 def check_Checkbutton(n: int):
@@ -99,14 +111,18 @@ def check_Checkbutton(n: int):
         check_box2.deselect()
     if n == 2 and cbx2.get():
         check_box1.deselect()
+    count_done()
 
 
 def create_GUI():
-    global root, labels, buttons_n, buttons_y, word_box, cbx1, cbx2, check_box1, check_box2
+    global root, labels, buttons_n, buttons_y, word_box, cbx1, cbx2, check_box1, check_box2, count_text
+    global TAGS
 
     for i, box in enumerate(word_box):
         box.set(WORDS[HEAD+i])
     root.title('通用技能')
+
+    count_done()
 
     # frame_head，其父窗口为root
     frame_head = Frame(root)
@@ -144,15 +160,19 @@ def create_GUI():
     frame_options = Frame(frame_right)
     frame_options.grid(row=0, column=0)
     label_op1 = Button(frame_options, text='一键全选通用', width=15, command=select_all_y)
-    label_op1.grid(row=0, column=0, padx=30, pady=20)
+    label_op1.grid(row=1, column=0, padx=30, pady=20)
     label_op2 = Button(frame_options, text='一键全选非通用', width=15, command=select_all_n)
-    label_op2.grid(row=1, column=0, padx=30, pady=20)
+    label_op2.grid(row=2, column=0, padx=30, pady=20)
     check_box1 = Checkbutton(frame_options, text='下页全选通用', width=15,
                              command=lambda: check_Checkbutton(1), variable=cbx1)
-    check_box1.grid(row=2, column=0, padx=30, pady=20)
+    check_box1.grid(row=3, column=0, padx=30, pady=20)
     check_box2 = Checkbutton(frame_options, text='下页全选非通用', width=15,
                              command=lambda: check_Checkbutton(2), variable=cbx2)
-    check_box2.grid(row=3, column=0, padx=30, pady=20)
+    check_box2.grid(row=4, column=0, padx=30, pady=20)
+
+    label_count = Label(frame_options, textvariable=count_text, width=20)
+    label_count.grid(row=0, column=0, padx=10, pady=20)
+
     root.mainloop()
 
 
