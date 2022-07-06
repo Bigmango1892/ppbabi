@@ -16,23 +16,15 @@ ability_words = list(ability_words_set)
 words_all = ability_words + list(words_all_set.symmetric_difference(ability_words_set))
 with open('ability_words.txt', 'w', encoding='utf8') as f:
     print('\n'.join(ability_words), file=f, end='')
-ease = np.zeros(shape=(len(ability_words), len(words_all)))
-
-similarity_matrix = np.array([[0. for _ in range(i+1)] + [1 - i/20 for _ in range(len(words_all)-i)]
-                              for i in range(len(ability_words))])
-similarity_matrix = similarity_matrix + similarity_matrix.transpose() * 0.5
-
+ease = np.zeros(shape=(len(words_all), len(words_all)))
 
 for i in range(len(words_reset)):
     index = []
-    if ability_words_set.intersection(words_reset[i]):
-        for word in words_reset[i]:
-            index.append(words_all.index(word))
-    add_matrix = np.zeros(shape=(len(ability_words), len(ability_words)))
-    for i_sm, i_ind in enumerate(index):
-        for j_sm, j_ind in enumerate(index):
-            add_matrix[i_ind, j_ind] = similarity_matrix[i_sm, j_sm]
-    ease = ease + add_matrix
+    for word in words_reset[i]:
+        index.append(words_all.index(word))
+    for i_ind in range(len(index)):
+        for j_ind in range(i_ind + 1, len(index)):
+            ease[index[i_ind], index[j_ind]] = ease[index[i_ind], index[j_ind]] + 1
 
 out_data = []
 for i in range(len(ability_words)):
