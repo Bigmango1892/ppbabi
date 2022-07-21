@@ -110,13 +110,18 @@ class TextFeature:
         return con_eig
 
 
-def preprocess(data_path: str, column_name: str = '工作内容（总的）'):
-    if data_path[-4:] == '.csv':
-        text = pd.read_csv(data_path)[column_name].to_list()
-    elif data_path[-5:] == '.xlsx':
-        text = pd.read_excel(data_path)[column_name].to_list()
+def preprocess(data: str, column_name: str = '工作内容（总的）', is_string=False):
+    if is_string:
+        describe = data.replace('\n', '').replace(' ', '')
+        if len(describe) == 0:
+            describe = '。'
+        return TextFeature(describe)
+    if data[-4:] == '.csv':
+        text = pd.read_csv(data)[column_name].to_list()
+    elif data[-5:] == '.xlsx':
+        text = pd.read_excel(data)[column_name].to_list()
     else:
-        with open(data_path, 'r', encoding='utf8') as _f:
+        with open(data, 'r', encoding='utf8') as _f:
             text = _f.read().strip('\n').split('\n')
     text_features = []
     for pos in range(len(text)):

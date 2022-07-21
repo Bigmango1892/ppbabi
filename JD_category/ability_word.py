@@ -1,19 +1,20 @@
 import pickle
 import weight.analy as analyse
 import pandas as pd
+from weight.calc_weight import load_data
 
-with open('JD按岗位细分分类.txt', 'r', encoding='utf8') as f:
-    index = {x.split(':')[0]: [int(y) for y in x.split(':')[1].strip('[]').split(', ')] for x in f.read().split('\n')}
-with open('../weight/words_reseted.data', 'rb') as f:
-    words = pickle.load(f)
+
+df = load_data()
+index = df.groupby(by='岗位名称目录').groups
+words = df['能力关键词（同义替换）'].to_list()
 length = {key: len(value) for key, value in index.items()}
-for key in length:
-    if length[key] < 100:
-        del index[key]
-category = ['行业', '岗位大类', '岗位细分']
+# for key in length:
+#     if length[key] < 100:
+#         del index[key]
+category = ['工种', '岗系', '岗位名称目录']
 
 for cate in category:
-    analyse.std_file = 'std_factor0630_{}.data'.format(cate)
+    analyse.std_file = 'std_factor0721_{}.data'.format(cate)
     output_data = []
     for key, value in index.items():
         analyse.key_word = key
@@ -30,4 +31,4 @@ for cate in category:
     for i in range(10):
         columns.extend(['技能词{}'.format(i+1), '特征值{}'.format(i+1)])
     output_data = pd.DataFrame(data=output_data, columns=columns)
-    output_data.to_csv('岗位技能词_按{}std_100以上.csv'.format(cate), index=False)
+    output_data.to_csv('0721岗位技能词_按{}std_100以上_要求.csv'.format(cate), index=False)
