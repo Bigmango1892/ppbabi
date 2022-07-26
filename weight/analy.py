@@ -44,7 +44,6 @@ def count_index():
     for words in abilities:
         item = []
         for i, word in enumerate(words):
-            word = word.replace('编程', '').replace('能力', '').lower()
             if len(words) == 1:
                 item.append(0)
             else:
@@ -54,7 +53,6 @@ def count_index():
     count_index = {}
     for words, poses in zip(abilities, count_pos):
         for word, pos in zip(words, poses):
-            word = word.replace('编程', '').replace('能力', '').lower()
             if word not in count_index:
                 count_index[word] = []
             count_index[word].append(pos)
