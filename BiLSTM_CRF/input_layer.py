@@ -2,17 +2,19 @@ import pandas as pd
 import numpy as np
 import jieba.posseg
 import torch
+import os
 
+file_path = os.path.dirname(os.path.realpath(__file__))
 # 读取所有的字符
-with open('./characters.txt', 'r', encoding='utf8') as f:
+with open(file_path + '/data/characters.txt', 'r', encoding='utf8') as f:
     CHAR = {c: i for i, c in enumerate(f.read().split(sep='\n'))}
 
 # 读取词性标注对应表
-with open('./posseg.txt', 'r', encoding='utf8') as f:
+with open(file_path + '/data/posseg.txt', 'r', encoding='utf8') as f:
     POSSEG = {POS.split(sep='\t')[0]: int(POS.split(sep='\t')[2].strip('\n')) for POS in f.readlines()}
 
 # 读取词性与词性标注对应表
-with open('./conpos.txt', 'r', encoding='utf8') as f:
+with open(file_path + '/data/conpos.txt', 'r', encoding='utf8') as f:
     CONPOS = {POS.split(sep=' ')[0]: POS.strip('\n').split(sep=' ')[1:] for POS in f.readlines()}
 
 
