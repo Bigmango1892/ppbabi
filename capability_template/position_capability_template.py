@@ -4,7 +4,7 @@ import numpy as np
 
 
 def calc_one_template(abilities: list, std_name: str):
-    count_pos = []
+    count_pos = []  # 用以记录每一条JD中能力词的位置信息，从0至1线性递增
     for ability_words in abilities:
         ability_words_len = len(ability_words)
         if ability_words_len == 1:
@@ -13,20 +13,20 @@ def calc_one_template(abilities: list, std_name: str):
         item = [i / (ability_words_len - 1) for i in range(len(ability_words))]
         count_pos.append(item)
 
-    count_index = {}
+    count_index = {}    # 用以统计不同词出现的位置信息，即对上述结果按不同的词进行聚合
     for ability_words, poses in zip(abilities, count_pos):
         for word, pos in zip(ability_words, poses):
             if word not in count_index:
                 count_index[word] = []
             count_index[word].append(pos)
 
-    count_mean = {key: np.mean(value) for key, value in count_index.items()}
-    count_len = {key: len(value) for key, value in count_index.items()}
+    count_mean = {key: np.mean(value) for key, value in count_index.items()}    # 位置量的均值
+    count_len = {key: len(value) for key, value in count_index.items()}         # 词频
     result = {key: count_len[key] * (1 - count_mean[key]) for key in count_len.keys()}
 
     with open(f'std_factor/data/{std_name}', 'rb') as f:
         std_factor = pickle.load(f)
-    result = {key: value * std_factor[key] for key, value in result.items() if key in std_factor}
+    result = {key: value * std_factor[key] for key, value in result.items() if key in std_factor}  # 引入std参量
 
     keys = list(result.keys())
     values = [result[key] for key in keys]

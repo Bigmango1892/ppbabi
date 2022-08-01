@@ -1,7 +1,7 @@
 import pandas as pd
 import pickle
 
-df = pd.read_csv('/Users/dingyouqian/Downloads/修改词对照表.csv', encoding='gbk')
+df = pd.read_csv('./修改词对照表.csv', encoding='gbk')
 with open('./polymerize_lower.pkl', 'rb') as f:
     poly = pickle.load(f)
 

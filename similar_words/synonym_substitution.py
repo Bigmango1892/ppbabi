@@ -25,4 +25,4 @@ def substitute_words(words):
 
 
 if __name__ == '__main__':
-    print(substitute_words('交流能力;C++;Python能力'))
+    print(substitute_words('交流能力;C++编程基础;Python能力'))
