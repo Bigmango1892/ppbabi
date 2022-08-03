@@ -76,7 +76,22 @@ template = calc_one_template(ability_words, 'std_factor0721_岗系.data')
 分类后计算的能力模板。例如：
 
 ```python
-
+data = [
+    # 这是一条JD
+    {'岗位名称目录': '分析师', '能力关键词（同义替换）': ['沟通能力', '表达能力']},
+    # 这是另一条JD
+    {'岗位名称目录': '分析师', '能力关键词（同义替换）': ['沟通', '表达']},
+    # 这还是另一条JD
+    {'岗位名称目录': '精算师', '能力关键词（同义替换）': ['沟通能力', '表达能力']}
+]
+# 分别聚合计算 '分析师'，'精算师' 的能力模板
+template = calc_all_template(pd.DataFrame(data))  # import pandas as pd
 ```
+
+### 计算方案
+详见 `position_capability_template.py` 中的 `calc_one_template` 函数，其中对每条JD中的能力词，从0到1递增标注其位置信息；
+
+### std_factor
+
 
 ## 相似能力计算
