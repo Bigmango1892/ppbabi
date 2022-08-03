@@ -95,3 +95,12 @@ template = calc_all_template(pd.DataFrame(data))  # import pandas as pd
 
 
 ## 相似能力计算
+
+## pdf提取：extract_pdf
+## pdf_layout.py
+* 从pdf格式简历中提取信息，流程：
+    * 对pdf简历进行分区(box)
+    * 识别姓名（LAC识别）、电话（正则）、邮箱（正则）
+    * 除去以上姓名、电话、邮箱的box后，按块合并剩余box（目前仅对“教育经历”进行测试）
+    * 提取能力关键词（可以用提取JD能力词的模型，但效果有优化空间）
+* [参考资料](https://tianchi.aliyun.com/notebook-ai/detail?spm=5176.12586969.1002.6.3d347fd7Cn1wa8&postId=112407)
