@@ -97,10 +97,39 @@ template = calc_all_template(pd.DataFrame(data))  # import pandas as pd
 ## 相似能力计算
 
 ## pdf提取：extract_pdf
-## pdf_layout.py
+### `pdf_layout.py`
 * 从pdf格式简历中提取信息，流程：
     * 对pdf简历进行分区(box)
     * 识别姓名（LAC识别）、电话（正则）、邮箱（正则）
     * 除去以上姓名、电话、邮箱的box后，按块合并剩余box（目前仅对“教育经历”进行测试）
     * 提取能力关键词（可以用提取JD能力词的模型，但效果有优化空间）
 * [参考资料](https://tianchi.aliyun.com/notebook-ai/detail?spm=5176.12586969.1002.6.3d347fd7Cn1wa8&postId=112407)
+
+## 公司信息处理: match_company
+### `label_process.py`
+* 处理shixiseng\_school\_recruitment\_jd中`标签`、`公司标签`两列数据
+* 代码基本完成，但是这些标签暂时没有用
+* `origin\_labels`: （若JD库更新，需要重新整理以下文件）
+    * `all\_label\_words\_part1`与 `all\_label\_words\_part1`: 全部标签
+    * `useful\_label.txt`: 归类后的标签字典
+    * `other_label.csv`: 未被归入类的剩余标签
+* `test`：测试样例及结果
+### `company_name.py`
+* 生成公司介绍表，定义大公司为`company\_data/公司简称-大类排行-CY表.csv`中所含公司，小公司为JD数据中包含的公司与上表取差集。
+* 已生成结束
+* `company\_data`：（若JD库更新，需要重新生成以下文件）
+    * 公司简称-大类排行-cy表：大公司名单及排名
+    * all_公司介绍表：把大、小公司信息合并为1张表，为本代码的最终输出。
+
+### `com_recom.py`
+* 根据岗位名推荐公司
+* 已完成，使用示例见`if \_\_name\_\_ == "\_\_main\_\_"`
+
+## 匹配职位：match_job
+### `match.py`
+* 根据用户提供的能力信息，进行匹配。
+    * `get\_table()`、`clean_words()`：根据`format\_weight`中的`能力模板.csv`与`原表.csv`生成`权重总表.csv`
+* `format\_weight`:
+    * `修改词对照表.csv`: 在从`原表.csv`整理得到`能力模板.csv`的过程中修改了部分词的表达，修改内容如本表所示。
+    * `coo.pkl`: 能力关联矩阵
+	* `dict.txt`: 能力词字典，编号与`coo.pkl`中的一致
