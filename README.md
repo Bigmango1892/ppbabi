@@ -98,6 +98,7 @@ template = calc_all_template(pd.DataFrame(data))  # import pandas as pd
 
 ## pdf提取：extract_pdf
 ### `pdf_layout.py`
+* 未完全实现，非常靠后的需求，可以先略过
 * 从pdf格式简历中提取信息，流程：
     * 对pdf简历进行分区(box)
     * 识别姓名（LAC识别）、电话（正则）、邮箱（正则）
@@ -114,21 +115,25 @@ template = calc_all_template(pd.DataFrame(data))  # import pandas as pd
     * `useful_label.txt`: 归类后的标签字典
     * `other_label.csv`: 未被归入类的剩余标签
 * `test`：测试样例及结果
+
 ### `company_name.py`
 * 生成公司介绍表，定义大公司为`company_data/公司简称-大类排行-CY表.csv`中所含公司，小公司为JD数据中包含的公司与上表取差集。
-* 已生成结束
+* `shixiseng_school_recruitment_jd`中的`所属公司`有较多同集团下属子公司（e.g 龙湖、龙湖物业）、以及同一公司的不同表达（e.g 北京乐有家、中山乐有家），编辑距离、jieba分词后匹配、删除地名后匹配效果均不好，目前方法为包含`company_data/公司简称-大类排行-CY表.csv`中同一公司名或被其中同一公司名包含的为同一家。待优化。
+* 已生成结束，使用示例见`if __name__ == "__main__"`
 * `company_data`：（若JD库更新，需要重新生成以下文件）
     * 公司简称-大类排行-cy表：大公司名单及排名
     * all_公司介绍表：把大、小公司信息合并为1张表，为本代码的最终输出。
 
 ### `com_recom.py`
-* 根据岗位名推荐公司
+* 根据岗位名推荐公司，`大公司`排序来自于`company_data/公司简称-大类排行-CY表.csv`的TOP级别，`小公司`排序来自于公司规模。
+* 推荐逻辑：输入三级目录岗位名称-> 查询数据库中招募此岗位的公司-> 根据排序进行推荐
 * 已完成，使用示例见`if __name__ == "__main__"`
 
 ## 匹配职位：match_job
 ### `match.py`
 * 根据用户提供的能力信息，进行匹配。
     * `get_table()`、`clean_words()`：根据`format_weight`中的`能力模板.csv`与`原表.csv`生成`权重总表.csv`
+    * 尝试过使用加权的范数、sin、jaccard、曼哈顿距离等进行衡量，效果一般
 * `format_weight`:
     * `修改词对照表.csv`: 在从`原表.csv`整理得到`能力模板.csv`的过程中修改了部分词的表达，修改内容如本表所示。
     * `coo.pkl`: 能力关联矩阵
